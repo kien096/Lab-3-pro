@@ -3,33 +3,25 @@
 #include "pugixml.cpp"
 #include "pugiconfig.hpp"
 #include <fstream>
+#include <map>
+#include <cstring>
 #include <vector>
 #include <locale.h>
+#include <utility>
 #include <iomanip>
 #include <string>
+#include <cstdlib>
 
 using namespace std;
 using namespace pugi;
 
-///help to find max of vector
-pair < int, int> max_find(vector <pair<string,float>> rout_distant){
-	float max = rout_distant[0].second;
+//help find max of vector //помогите найти макс вектора
+pair < int, float> max_find(vector <pair<string,float>> rou_dis){
+	float max = rou_dis[0].second;
 	int mark = 0;
-	for (int i = 0; i < rout_distant.size(); i++){
-		if ( rout_distant[i].second > max) {
-			max = rout_distant[i].second;
-			mark = i;
-		}
-	}
-	pair <int, int> b (mark, max );
-	return b;
-}
-pair < int, int> max_find_route(vector <pair<string, int>> rout_distant){
-	float max = rout_distant[0].second;
-	int mark = 0;
-	for (int i = 0; i < rout_distant.size(); i++){
-		if ( rout_distant[i].second > max) {
-			max = rout_distant[i].second;
+	for (int i = 0; i < rou_dis.size(); i++){
+		if ( rou_dis[i].second > max) {
+			max = rou_dis[i].second;
 			mark = i;
 		}
 	}
@@ -38,14 +30,14 @@ pair < int, int> max_find_route(vector <pair<string, int>> rout_distant){
 }
 class Transport_station{
 	private:
-		pair <float, float> Split_coordinates(string str){
-			string str1 = str.substr(0, str.find(","));
+		pair <float, float> Split_coordinates(string str){     ///Разделить координаты <напимер: <coordinates>59.833108,30.182092</coordinates>>
+			string str1 = str.substr(0, str.find(","));        ///59.833108 , 30.182092
 			string str2 = str.substr(str.find(",") + 1, str.size());
 			pair <float,float> b ( stof(str1), stof(str2));
 			return b;
 		}
 
-		vector<string> get_routes(string &s) {
+		vector<string> get_routes(string &s) { /// read route and split
 		    vector<string> result;
 		    stringstream ss (s);
 		    string item;
@@ -72,7 +64,7 @@ class Transport_station{
 		}
 
 	public:
-		string location, number, type_vehicle,object_type,name_stopping, the_official_name;
+		string location, number, type_of_vehicle,object_type,name_stopping, the_official_name;
 		vector <string> routes;
 		pair <float,float> coordinates;
 		Transport_station(){
@@ -88,7 +80,6 @@ class Transport_station{
 			routes = p.routes;
 			coordinates = p.coordinates;
 		};
-
 	void operator= (Transport_station const &u){
 		number = u.number;
 		object_type = u.object_type;
@@ -98,24 +89,29 @@ class Transport_station{
 		routes = u.routes;
 		coordinates = u.coordinates;
 	}
-	void get(string number, string type_vehicle_save, string object_type_save, string name_stopping_save, string the_official_name_save, string location_save, string routes_save, string coordinates_save){
-		this->number = number;
-		this->type_vehicle = type_vehicle_save;
-		this->object_type = object_type_save;
-		this->name_stopping = name_stopping_save;
-		this->the_official_name = the_official_name_save;
-		this->location = location_save;
-		this->routes = get_routes(routes_save);
-		this->coordinates = Split_coordinates(coordinates_save);
+	void get(string numberx, string type_of_vehiclex, string object_typex, string name_stoppingx, string the_official_namex, string locationx, string routesx, string coordinatesx){
+		this->number = numberx;
+		this->type_of_vehicle = type_of_vehiclex;
+		this->object_type = object_typex;
+		this->name_stopping = name_stoppingx;
+		this->the_official_name = the_official_namex;
+		this->location = locationx;
+		this->routes = get_routes(routesx);
+		this->coordinates = Split_coordinates(coordinatesx);
 	}
 };
 class Vehicle{
 	private:
-		float distance(pair <float, float> a, pair <float, float> b){
+		float distance(pair <float, float> a, pair <float, float> b){    /// Рассчитать расстояние между двумя координатами
 			return sqrt(pow((a.first - b.first),2) + pow((a.second - b.second),2));
 		}
-		void set_routes_list(){
-			// tim so tuyen duong khac nhau
+        map <string, int> routes;/// используется для упражнения 1
+        string routes_transport;
+
+
+
+		void set_routes_list(){    ///используется для упражнения 2
+			/// Найдем разные номера маршрутов
 			int count;
 			routes_list.push_back(List[0].routes[0]);
 			for(int i = 0; i < List.size(); i++){
@@ -135,7 +131,6 @@ class Vehicle{
 		}
 
 		void set_list_coord_of_routes(){
-			// tim cap rou - coordinates
 			for (int i = 0; i < routes_list.size(); i++){
 				pair<string, vector<pair<float,float>>> temp;
 				temp.first = routes_list[i];
@@ -157,28 +152,29 @@ class Vehicle{
 					dis += distance(coords_each_route[i].second[j], coords_each_route[i].second[j+1]);
 				}
 				temp.second = dis;
-				rout_distant.push_back(temp);
+				rou_dis.push_back(temp);
 			}
 			return;
 		}
+
 		void set_rou_quantity(){
-			//ham de tao ra vector cac cap tuyen duong - so luong diem dung
+			//Найдем количество остановок
 			int count;
 			pair <string, int> temp (List[0].routes[0], 1);
-			rout_quantity.push_back(temp);
+			rou_quantity.push_back(temp);
 			for(int i = 1; i < List.size(); i++){
 				for(int j = 0; j < List[i].routes.size(); j++){
 					count = 0;
-					for(int k = 0; k < rout_quantity.size(); k++){
-						if(rout_quantity[k].first == List[i].routes[j]) {
-							rout_quantity[k].second++;
+					for(int k = 0; k < rou_quantity.size(); k++){
+						if(rou_quantity[k].first == List[i].routes[j]) {
+							rou_quantity[k].second++;
 						}
 						else count ++;
 					}
-					if (count ==  rout_quantity.size()) {
+					if (count ==  rou_quantity.size()) {
 						temp.first = List[i].routes[j];
 						temp.second = 1;
-						rout_quantity.push_back(temp);
+						rou_quantity.push_back(temp);
 					}
 				}
 			}
@@ -188,8 +184,8 @@ class Vehicle{
 	public:
 		vector <Transport_station> List;
 		vector <string> routes_list;
-		vector <pair<string,float>> rout_distant; // khoang cach
-		vector <pair<string,int>> rout_quantity; // so luong diem dung
+		vector <pair<string,float>> rou_dis;
+		vector <pair<string,int>> rou_quantity;
 		vector < pair<string, vector< pair<float,float>> > > coords_each_route;
 		Vehicle(){
 		};
@@ -203,65 +199,110 @@ class Vehicle{
 			this->List = u.List;
 		}
 
+		Vehicle (string trans) : routes_transport(trans) {}
 
-		void route_have_most_stoppings(){
-			// tim tuyen duong co so luong diem dung lon nhat
-			set_rou_quantity();
-			pair <int, int> b = max_find_route(rout_quantity);
-			cout << "Route '"<< rout_quantity[b.first].first <<"' has the most number of Stopping, with: " << rout_quantity[b.first].second << " Stopping(s)."<<endl;
-			return;
-		}
+        void print_max_most_stoppings() {      ///маршрут с наибольшим количеством остановок
+                int max = -1;
+                string name;
+                map <string, int>::iterator iter;
+                for (iter = routes.begin(); iter != routes.end(); ++iter) {
+	    	        if (iter->second > max) {
+                        max = iter->second;
+                        name = iter->first;
+                    }
+	            }
+        cout << "name_routes = " << "'" <<  name << "'" << "\tmax_routes = "<< max << endl;
+        }
 
-		void print_longest_route(){
-			// dung de in tuyen duong dai nhat
+
+		void maps_routes() {                    ///читать routes в data.xml
+            xml_document doc;
+            if (!doc.load_file("data.xml"))
+            exit(1);
+        //pugi::xml_node panels = doc.child("dataset");
+            xml_node panels = doc.first_child();
+            for (xml_node panel1 = panels.first_child(); panel1; panel1 = panel1.next_sibling()) {
+                string transport;
+            for (xml_node panel2 = panel1.first_child(); panel2; panel2 = panel2.next_sibling()) {
+                string name = panel2.name();
+                string value = panel2.child_value();
+                if (name == "type_of_vehicle") {
+                    transport = value;
+                }
+                if ((transport == routes_transport) && (name == "routes")) {
+                    int size = value.length();
+                    string value_temp;
+                    for (int i = 0; i < size; ++i) {
+                        char ch;
+                        ch = value[i];
+                        if ((ch == '.') || (ch == ',')) {
+                            routes[value_temp]++;
+                            value_temp = "";
+                        }
+                        else {
+                            value_temp += ch;
+                        }
+                    }
+                    if ((value_temp != "") && (value_temp != " ")){
+                        routes[value_temp]++;
+                    }
+                }
+            }
+        }
+    }
+
+		void print_max_route(){            ///Наиболее длинный маршрут (основывая на координатах) по отдельным видам транспорта
 			set_routes_list();
 			set_list_coord_of_routes();
 			set_pair_routes_dis();
-			pair <int, float> b = max_find(rout_distant);
-			cout <<"Longest Routes: '" << rout_distant[b.first].first << "' with lenght = " << rout_distant[b.first].second<<"."<<endl;
+			pair <int, float> b = max_find(rou_dis);
+			cout <<"Longest Routes: " << rou_dis[b.first].first << " lenght = " << rou_dis[b.first].second<<endl;
 			return;
 		}
 		~Vehicle(){
 		};
 };
-class Tramvay : public Vehicle{
+
+class Tramvai_t : public Vehicle{
 	public:
-	Tramvay() : Vehicle(){
+	Tramvai_t() : Vehicle(){
 	};
 
-	Tramvay(Tramvay const &m) : Vehicle(m){
+	Tramvai_t(Tramvai_t const &m) : Vehicle(m){
 	};
 
-	Tramvay(vector <Transport_station> &p) : Vehicle(p){
+	Tramvai_t(vector <Transport_station> &p) : Vehicle(p){
 	};
 
-	~Tramvay(){
-	};
-};
-class Trolleybuss : public Vehicle{
-	public:
-	Trolleybuss() : Vehicle(){
-	};
-	Trolleybuss(vector <Transport_station> &p) : Vehicle(p){
-	};
-	Trolleybuss(Trolleybuss const &p) : Vehicle(p){
-	};
-	~Trolleybuss(){
+	~Tramvai_t(){
 	};
 };
 
-class Buss : public Vehicle{
+class Trolleybus_t : public Vehicle{
 	public:
-	Buss() : Vehicle(){
+	Trolleybus_t() : Vehicle(){
 	};
-	Buss(vector <Transport_station> &p) : Vehicle(p){
+	Trolleybus_t(vector <Transport_station> &p) : Vehicle(p){
 	};
-	Buss(Buss const &p) : Vehicle(p){
+	Trolleybus_t(Trolleybus_t const &p) : Vehicle(p){
 	};
-	~Buss(){
+	~Trolleybus_t(){
 	};
 };
-class Streett{
+
+class Bus_t : public Vehicle{
+	public:
+	Bus_t() : Vehicle(){
+	};
+	Bus_t(vector <Transport_station> &p) : Vehicle(p){
+	};
+	Bus_t(Bus_t const &p) : Vehicle(p){
+	};
+	~Bus_t(){
+	};
+};
+
+class Street_t{
 	private:
 		void shorten_streets_name(){
 			street.push_back(List[0]);
@@ -286,82 +327,82 @@ class Streett{
 
 	public:
 		vector <string> List, street;
-		vector <pair<string, int>> street_number_stopping;
-		Streett(){}
-		Streett(vector <string> p){
+		vector <pair<string, int>> street_numberstopping;
+		Street_t(){}
+		Street_t(vector <string> p){
 			this->List = p;
 		}
-		void operator= (Streett &u){
+		void operator= (Street_t &u){
 			this->List = u.List;
 		}
-		void street_have_most_number_of_route(){
+		void Print_street_with_most_route(){
 			shorten_streets_name();
 			pair <string,int> temp (street[0], 1);
-			street_number_stopping.push_back(temp);
+			street_numberstopping.push_back(temp);
 			for(int i = 1; i < street.size(); i++){
-				//int count = 0;
-				if(street[i] == street_number_stopping[street_number_stopping.size() - 1].first)
-				 street_number_stopping[street_number_stopping.size() - 1].second++;
+				if(street[i] == street_numberstopping[street_numberstopping.size() - 1].first)
+				 street_numberstopping[street_numberstopping.size() - 1].second++;
 				else {
 					temp.first = street[i];
 					temp.second = 1;
-					street_number_stopping.push_back(temp);
+					street_numberstopping.push_back(temp);
 				}
 			}
-			pair <string,int> max = street_number_stopping[0];
-			for(int i = 0; i < street_number_stopping.size(); i++){
-				if (max.second < street_number_stopping[i].second) max = street_number_stopping[i];
+			pair <string,int> max = street_numberstopping[0];
+			for(int i = 0; i < street_numberstopping.size(); i++){
+				if (max.second < street_numberstopping[i].second) max = street_numberstopping[i];
 			}
-			cout<<"Street with most number of route: '"<< max.first <<"'." <<endl;
+			cout<<"Street with most routes: "<< max.first<<endl;
 			return;
 		}
-		~Streett(){}
+		~Street_t(){}
 
 };
-int vehicle(vector <xml_node> &data, vector <string> &type_vehicle){
-		type_vehicle.push_back(data[0].child_value("type_vehicle"));
-		for (int i = 1; i < data.size(); i++){
-		if (data[i].child_value("type_vehicle") != type_vehicle[type_vehicle.size() - 1])
-			type_vehicle.push_back(data[i].child_value("type_vehicle"));
+
+int number_type_of_vehicle(vector <xml_node> &DATA, vector <string> &type_of_vehicle){
+		type_of_vehicle.push_back(DATA[0].child_value("type_of_vehicle"));
+		for (int i = 1; i < DATA.size(); i++){
+		if (DATA[i].child_value("type_of_vehicle") != type_of_vehicle[type_of_vehicle.size() - 1]){
+			type_of_vehicle.push_back(DATA[i].child_value("type_of_vehicle"));
+		}
 	}
-		return type_vehicle.size();
+		return type_of_vehicle.size();
 }
 
 int main()
 {
-	std::locale::global(std::locale(""));
-    vector <xml_node> data;
+	setlocale(LC_ALL, "Россия");
+    vector <xml_node> DATA;
     ifstream stream("data.xml");
     xml_document doc;
 	doc.load(stream);
 
     for (xml_node i = doc.child("dataset").first_child(); i; i = i.next_sibling()){
     	xml_node temp = i;
-    	data.push_back(temp);
+    	DATA.push_back(temp);
 	}
 
 	// Find the number of different types of vehicles
-	vector <string> type_vehicle;
-	vehicle(data, type_vehicle);
+	vector <string> type_of_vehicle;
+	number_type_of_vehicle(DATA, type_of_vehicle);
+	string bus_1 = "Автобус";
+    string trolleybus_1 = "Троллейбус";
+    string tramvai_1 = "Трамвай";
 
-	vector <Transport_station> tramvai;
-	vector <Transport_station> troll;
-	vector <Transport_station> bus;
+
+	vector <Transport_station> Tramvai;
+	vector <Transport_station> Trolleybus;
+	vector <Transport_station> Bus;
 	vector <string> street_list;
 
-	string stopping = data[0].child_value("object_type"); // stopping = Остановка;
-	for (int i = 0; i < data.size(); i++){
-		if ( data[i].child_value("object_type") == stopping){
+	string stopping = DATA[0].child_value("object_type"); // stopping = Остановка;
+	for (int i = 0; i < DATA.size(); i++){
+		if ( DATA[i].child_value("object_type") == stopping){
 			Transport_station temp;
-			temp.get(data[i].child_value("number"), data[i].child_value("type_of_vehicle"),data[i].child_value("object_type"),
-					data[i].child_value("name_stopping"),data[i].child_value("the_official_name"),data[i].child_value("location"),
-					data[i].child_value("routes"),data[i].child_value("coordinates"));
-
-			street_list.push_back(data[i].child_value("the_official_name"));
-			if(temp.type_vehicle == type_vehicle[0]) tramvai.push_back(temp);
-			else if(temp.type_vehicle == type_vehicle[1]) troll.push_back(temp);
-			else bus.push_back(temp);
-      /*      for (int i = 0; i < street_list.size();i++){
+			temp.get(DATA[i].child_value("number"), DATA[i].child_value("type_of_vehicle"),DATA[i].child_value("object_type"),
+					DATA[i].child_value("name_stopping"),DATA[i].child_value("the_official_name"),DATA[i].child_value("location"),
+					DATA[i].child_value("routes"),DATA[i].child_value("coordinates"));
+/*  for (int i = 0; i < street_list.size();i++){
 		if (street_list[i].child_value("type_vehicle") == "Трамвай") tramvai.push_back(street_list[i]);
                // cout << datalab3[i].child_value("type_of_vehicle") << endl;
 		if (street_list[i].child_value("type_vehicle") == "Троллейбус") troll.push_back(street_list[i]);
@@ -369,29 +410,43 @@ int main()
 		if (street_list[i].child_value("type_vehicle") == "Автобус") bus.push_back(street_list[i]);
                // cout << datalab3[i].child_value("type_of_vehicle") << endl;
 	}*/
+
+			street_list.push_back(DATA[i].child_value("the_official_name"));
+			if(temp.type_of_vehicle == type_of_vehicle[0]) Tramvai.push_back(temp);
+			else if(temp.type_of_vehicle == type_of_vehicle[1]) Trolleybus.push_back(temp);
+			else Bus.push_back(temp);
 		}
 	}
 
-	// hien thi routes Tramvai
-	//cout<<endl;
-	Tramvay tramv(tramvai);
-	tramv.print_longest_route();
-	tramv.route_have_most_stoppings();
 
-	//cout<< endl;
-	Trolleybuss trolley(troll);
-	trolley.print_longest_route();
-	trolley.route_have_most_stoppings();
 
-	//cout<< endl;
-	Buss avbus(bus);
-	avbus.print_longest_route();
-	avbus.route_have_most_stoppings();
 
-	//cout <<endl;
-	Streett street(street_list);
-	street.street_have_most_number_of_route();
+	cout<< "-------------------- TRAMVAI --------------------"<<endl;
+	Vehicle a1(tramvai_1);
+	Tramvai_t tram(Tramvai);
+	a1.maps_routes();
+	tram.print_max_route();
+	a1.print_max_most_stoppings();
+
+	cout<< endl << "-------------------- TROLLEYBUS --------------------"<<endl;
+	Vehicle a2(trolleybus_1);
+	Trolleybus_t troll(Trolleybus);
+	a2.maps_routes();
+	troll.print_max_route();
+	a2.print_max_most_stoppings();
+
+	cout<< endl << "-------------------- BUS --------------------" <<endl;
+	Vehicle a3(bus_1);
+	Bus_t buss(Bus);
+	a3.maps_routes();
+	buss.print_max_route();
+	a3.print_max_most_stoppings();
+
+	// 3
+	cout <<endl;
+	Street_t a4(street_list);
+	a4.Print_street_with_most_route();
 
 	return 0;
-
 }
+
