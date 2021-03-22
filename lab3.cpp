@@ -15,7 +15,7 @@
 using namespace std;
 using namespace pugi;
 
-//help find max of vector //помогите найти макс вектора
+//help find max of vector //помогите найти макс вектора  
 pair < int, float> max_find(vector <pair<string,float>> rou_dis){
 	float max = rou_dis[0].second;
 	int mark = 0;
@@ -28,6 +28,7 @@ pair < int, float> max_find(vector <pair<string,float>> rou_dis){
 	pair <int, int> b (mark, max );
 	return b;
 }
+///класс для хранения значений из data.xml
 class Transport_station{
 	private:
 		pair <float, float> Split_coordinates(string str){     ///Разделить координаты <напимер: <coordinates>59.833108,30.182092</coordinates>>
@@ -71,6 +72,7 @@ class Transport_station{
 		};
 		~Transport_station(){
 		};
+		/// save avriable
 		Transport_station(Transport_station const &p){
 			number = p.number;
 			object_type = p.object_type;
@@ -421,28 +423,27 @@ int main()
 
 
 
-	cout<< "-------------------- TRAMVAI --------------------"<<endl;
+	cout<< "TRAMVAI"<<endl;
 	Vehicle a1(tramvai_1);
 	Tramvai_t tram(Tramvai);
 	a1.maps_routes();
 	tram.print_max_route();
 	a1.print_max_most_stoppings();
 
-	cout<< endl << "-------------------- TROLLEYBUS --------------------"<<endl;
+	cout<< endl << "TROLLEYBUS"<<endl;
 	Vehicle a2(trolleybus_1);
 	Trolleybus_t troll(Trolleybus);
 	a2.maps_routes();
 	troll.print_max_route();
 	a2.print_max_most_stoppings();
 
-	cout<< endl << "-------------------- BUS --------------------" <<endl;
+	cout<< endl << "BUS" <<endl;
 	Vehicle a3(bus_1);
 	Bus_t buss(Bus);
 	a3.maps_routes();
 	buss.print_max_route();
 	a3.print_max_most_stoppings();
 
-	// 3
 	cout <<endl;
 	Street_t a4(street_list);
 	a4.Print_street_with_most_route();
